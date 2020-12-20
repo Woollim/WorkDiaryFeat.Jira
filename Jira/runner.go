@@ -117,12 +117,12 @@ func getConfiguration() *Configuration {
 func storeConfiguration(conf Configuration) {
 	json, err := json.Marshal(conf)
 	if err != nil {
-		println("Unexpected Error", err.Error())
+		fmt.Println(err.Error())
 		panic("사용자의 정보를 제대로 저장하지 못했습니다. Script를 종료 후 다시 실행해주세요.")
 	}
 	err = ioutil.WriteFile(confFilePath, json, 0777)
 	if err != nil {
-		println("Unexpected lError", err.Error())
+		fmt.Println(err.Error())
 		panic("사용자의 정보를 제대로 저장하지 못했습니다. Script를 종료 후 다시 실행해주세요.")
 	}
 }
