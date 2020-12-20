@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-const { PDFDocument, StandardFonts} = require('pdf-lib');
+const { PDFDocument, StandardFonts } = require('pdf-lib');
 const fontkit = require('@pdf-lib/fontkit');
 const fs = require('fs');
 const parse = require('csv-parse/lib/sync');
@@ -14,10 +14,10 @@ var appDir = path.dirname(require.main.filename);
 
 
 class Point {
-    constructor(x, y) {
-        this.x = x;
-        this.y = y;
-    }
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+  }
 }
 
 const namePoint = new Point(153, 720);
@@ -53,7 +53,7 @@ class UserInfo {
 }
 
 class WorkInfo {
-  constructor(date, workMemo, workStartTime = "10:00", workEndTime="19:00") {
+  constructor(date, workMemo, workStartTime, workEndTime) {
     this.date = date;
     this.workMemo = workMemo;
     this.workStartTime = workStartTime;
@@ -148,7 +148,7 @@ async function createSheet(fileName, userInfo, workInfos, year, imgData) {
   page = await drawUserInfo(page, userInfo);
 
   const workInfoLen = workInfos.workInfoList.length
-  const workDuration = workInfos.workInfoList[0].date + "~" + workInfos.workInfoList[workInfoLen-1].date
+  const workDuration = workInfos.workInfoList[0].date + "~" + workInfos.workInfoList[workInfoLen - 1].date
   console.log("Generating " + workDuration + " pdf result")
 
   var fontSize = 8
@@ -157,8 +157,7 @@ async function createSheet(fileName, userInfo, workInfos, year, imgData) {
     y: durationPoint.y - fontSize,
     size: fontSize,
   })
-
-  const splited = workInfos.workInfoList[workInfoLen-1].date.split('/')
+  const splited = workInfos.workInfoList[workInfoLen - 1].date.split('/')
   page.drawText(year, {
     x: signYearPoint.x,
     y: signYearPoint.y - fontSize,
@@ -181,24 +180,24 @@ async function createSheet(fileName, userInfo, workInfos, year, imgData) {
     var workInfo = workInfos.workInfoList[i]
     page.drawText(workInfo.date, {
       x: workStartDatePoint.x,
-      y: workStartDatePoint.y - fontSize - height*i,
+      y: workStartDatePoint.y - fontSize - height * i,
       size: fontSize,
     })
     page.drawText(workInfo.workMemo, {
       x: workMemoPoint.x,
-      y: workMemoPoint.y - fontSize - height*i,
+      y: workMemoPoint.y - fontSize - height * i,
       size: fontSize,
     })
 
     fontSize = 6
     page.drawText(workInfo.workStartTime, {
       x: workStartTimePoint.x,
-      y: workStartTimePoint.y - fontSize - height*i,
+      y: workStartTimePoint.y - fontSize - height * i,
       size: fontSize,
     })
     page.drawText(workInfo.workEndTime, {
       x: workEndTimePoint.x,
-      y: workEndTimePoint.y - fontSize - height*i,
+      y: workEndTimePoint.y - fontSize - height * i,
       size: fontSize,
     })
   }
@@ -207,40 +206,40 @@ async function createSheet(fileName, userInfo, workInfos, year, imgData) {
 
 async function parseCSV(csvFileName) {
   const file = fs.readFileSync(csvFileName)
-  records = parse(file.toString(), {columns: false, skip_empty_lines:false})
+  records = parse(file.toString(), { columns: false, skip_empty_lines: true })
   const userInfo = new UserInfo(
-    name=records[0][1],
-    birth=records[1][1],
-    milStartDate=records[2][1],
-    phoneNumber=records[3][1],
-    workPlace=records[4][1],
-    companyName=records[5][1],
-    chairmanName=records[6][1],
-    reason=records[7][1],
+    name = records[0][1],
+    birth = records[1][1],
+    milStartDate = records[2][1],
+    phoneNumber = records[3][1],
+    workPlace = records[4][1],
+    companyName = records[5][1],
+    chairmanName = records[6][1],
+    reason = records[7][1],
   )
   var i = 0;
   var workInfos = [];
-  for(i = 8; i < records.length; i+=5) {
-    const workWindow = records.slice(i, i+5)
+  for (i = 8; i < records.length; i += 5) {
+    const workWindow = records.slice(i, i + 5)
     var works = []
-    for(var workIdx = 0; workIdx < workWindow.length; workIdx++) {
+    for (var workIdx = 0; workIdx < workWindow.length; workIdx++) {
       var work = workWindow[workIdx]
-      works.push(new WorkInfo(work[0], work[1]))
+      works.push(new WorkInfo(work[0], work[1], work[2] || "10:00", work[3] || "19:00"))
     }
     workInfos.push(
       new WorkInfos(
-        startDate=workWindow[0][0],
-        endDate=workWindow[workWindow.length-1][0],
-        workInfoList=works
-    ));
+        startDate = workWindow[0][0],
+        endDate = workWindow[workWindow.length - 1][0],
+        workInfoList = works
+      ));
   }
   return [userInfo, workInfos]
 }
 
 const sleep = (ms) => {
-   return new Promise(resolve=>{
-       setTimeout(resolve,ms)
-   })
+  return new Promise(resolve => {
+    setTimeout(resolve, ms)
+  })
 }
 
 async function getSignature() {
@@ -248,11 +247,11 @@ async function getSignature() {
   app.use(bodyParser.json()); // for parsing application/json
   app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
   app.use(upload.array()); // for parsing multipart/form-data
-  app.use(express.static(appDir+'/public'))
+  app.use(express.static(appDir + '/public'))
 
   var data = ""
 
-  app.post('/', (req, res) =>{
+  app.post('/', (req, res) => {
     res.send("Hello")
     data = req.body.imgData
   })
@@ -262,7 +261,7 @@ async function getSignature() {
   })
   open("http://127.0.0.1:8080/index.html")
 
-  for(;;){
+  for (; ;) {
     if (data !== "") {
       break;
     }
@@ -273,7 +272,7 @@ async function getSignature() {
   return data
 }
 
-async function main(){
+async function main() {
   const signature = await getSignature()
   var myArgs = process.argv.slice(2);
   if (myArgs.length == 0) {
@@ -292,8 +291,8 @@ async function main(){
     const startDate = work.startDate.replace('/', '_')
     const endDate = work.endDate.replace('/', '_')
     const fileName = [userInfo.name, startDate, endDate].join('_') + ".pdf"
-    await createSheet("./"+fileName, userInfo, work, year, signature)
+    await createSheet("./" + fileName, userInfo, work, year, signature)
   }
 }
 
-main().then(()=>{console.log("success")})
+main().then(() => { console.log("success") })
